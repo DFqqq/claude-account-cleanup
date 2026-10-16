@@ -5,6 +5,7 @@ authorization; the invoking agent must establish authorization and old-account s
 """
 import argparse
 import ctypes
+import errno
 import hashlib
 import json
 import os
@@ -18,7 +19,7 @@ from types import SimpleNamespace
 from identifier_policy import reset_fields
 
 sys.dont_write_bytecode = True
-VERSION = '1.2.0'
+VERSION = '1.2.1'
 STATE_FIELDS = frozenset({'oauthAccount', 'userID', 'machineID', 'deviceId'})
 CREDENTIAL_FIELDS = frozenset({'claudeAiOauth'})
 REPARSE = 0x400
@@ -226,6 +227,44 @@ def private_permissions(path):
             kernel.LocalFree(sd)
 
 
+def mac_acl_fingerprint(path, expected):
+    """A valid descriptor distinguishes an absent ACL from a missing pathname.
+
+    Darwin acl_get_fd_np may return NULL/ENOENT for a file with no extended
+    ACL. Other errors are not evidence of absence and must stop cleanup.
+    See Apple Libc posix1e/acl_file.c and filesec.c.
+    """
+    libc = ctypes.CDLL('/usr/lib/libSystem.B.dylib', use_errno=True)
+    libc.acl_get_fd_np.argtypes = [ctypes.c_int, ctypes.c_int]
+    libc.acl_get_fd_np.restype = ctypes.c_void_p
+    libc.acl_to_text.argtypes = [ctypes.c_void_p, ctypes.POINTER(ctypes.c_ssize_t)]
+    libc.acl_to_text.restype = ctypes.c_void_p
+    libc.acl_free.argtypes = [ctypes.c_void_p]
+    libc.acl_free.restype = ctypes.c_int
+    fd = os.open(path, os.O_RDONLY | getattr(os, 'O_NOFOLLOW', 0))
+    acl = rendered = None
+    try:
+        actual = os.fstat(fd)
+        keys = ('st_dev', 'st_ino', 'st_mode', 'st_uid', 'st_gid')
+        require(all(getattr(actual, key) == getattr(expected, key) for key in keys),
+                'File changed during macOS ACL inspection')
+        ctypes.set_errno(0)
+        acl = libc.acl_get_fd_np(fd, 0x100)
+        if not acl:
+            require(ctypes.get_errno() == errno.ENOENT, 'Cannot inspect macOS ACL')
+            return None
+        size = ctypes.c_ssize_t()
+        rendered = libc.acl_to_text(acl, ctypes.byref(size))
+        require(rendered, 'Cannot inspect macOS ACL')
+        return digest(ctypes.string_at(rendered, size.value))
+    finally:
+        if rendered:
+            libc.acl_free(rendered)
+        if acl:
+            libc.acl_free(acl)
+        os.close(fd)
+
+
 def metadata(path):
     meta = path.lstat()
     if os.name == 'nt':
@@ -236,25 +275,7 @@ def metadata(path):
                  for name in os.listxattr(path, follow_symlinks=False)}
     result = {'mode': stat.S_IMODE(meta.st_mode), 'uid': meta.st_uid, 'gid': meta.st_gid, 'xattrs': attrs}
     if sys.platform == 'darwin':
-        libc = ctypes.CDLL('/usr/lib/libSystem.B.dylib', use_errno=True)
-        libc.acl_get_file.argtypes = [ctypes.c_char_p, ctypes.c_int]
-        libc.acl_get_file.restype = ctypes.c_void_p
-        libc.acl_to_text.argtypes = [ctypes.c_void_p, ctypes.POINTER(ctypes.c_ssize_t)]
-        libc.acl_to_text.restype = ctypes.c_void_p
-        libc.acl_free.argtypes = [ctypes.c_void_p]
-        libc.acl_free.restype = ctypes.c_int
-        acl = libc.acl_get_file(str(path).encode('utf-8'), 0x100)
-        require(acl, 'Cannot inspect macOS ACL')
-        rendered = None
-        try:
-            size = ctypes.c_ssize_t()
-            rendered = libc.acl_to_text(acl, ctypes.byref(size))
-            require(rendered, 'Cannot inspect macOS ACL')
-            result['acl'] = digest(ctypes.string_at(rendered, size.value))
-        finally:
-            if rendered:
-                libc.acl_free(rendered)
-            libc.acl_free(acl)
+        result['acl'] = mac_acl_fingerprint(path, meta)
     return result
 
 

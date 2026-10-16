@@ -1,11 +1,5 @@
 {
-  "implementation_version": "1.2.0",
-  "core_scripts_unchanged": {
-    "scripts/cleanup_guard.py": "5123fc6186741d812c78daced07ee2e34d91f134268f8cc70058187a0ff36fa8",
-    "scripts/keychain_guard.py": "cb4d75ec4701377e926f073555b909b45cb299056e8b29da3403b45ee90cade2",
-    "scripts/identifier_policy.py": "5dc5943f0d10c33d2b02bcf41300a97b331b0887fe03d53ead149834949e9b68",
-    "scripts/browser_cleanup.mjs": "5e6a14a9cf3bd84842ea677be72a1da3e7dc0a26325a89ba7a10128e79c2a15e"
-  },
+  "implementation_version": "1.2.1",
   "public_packaging_changes": [
     "MIT license included in the installed skill",
     "Public README and install links",
@@ -13,5 +7,23 @@
   ],
   "real_account_data_included": false,
   "private_git_history_included": false,
-  "native_mac_keychain_tested": false
+  "native_mac_keychain_tested": false,
+  "baseline_version": "1.2.0",
+  "baseline_core_sha256": {
+    "scripts/cleanup_guard.py": "5123fc6186741d812c78daced07ee2e34d91f134268f8cc70058187a0ff36fa8",
+    "scripts/keychain_guard.py": "cb4d75ec4701377e926f073555b909b45cb299056e8b29da3403b45ee90cade2",
+    "scripts/identifier_policy.py": "5dc5943f0d10c33d2b02bcf41300a97b331b0887fe03d53ead149834949e9b68",
+    "scripts/browser_cleanup.mjs": "5e6a14a9cf3bd84842ea677be72a1da3e7dc0a26325a89ba7a10128e79c2a15e"
+  },
+  "release_core_sha256": {
+    "scripts/cleanup_guard.py": "e7dbad592baf329f4ae2571dd6b7ae4d5be6c92e98c64a53bf5ff815e0e79701",
+    "scripts/keychain_guard.py": "cb4d75ec4701377e926f073555b909b45cb299056e8b29da3403b45ee90cade2",
+    "scripts/identifier_policy.py": "5dc5943f0d10c33d2b02bcf41300a97b331b0887fe03d53ead149834949e9b68",
+    "scripts/browser_cleanup.mjs": "381eeaad416f48a399e841261aea7d4cc4c04a9bd13d53a4142c6848e9d63bef"
+  },
+  "implementation_changes": [
+    "macOS: inspect an already-open file descriptor and represent NULL/ENOENT as no extended ACL; reject permission and unknown failures",
+    "Browser protocol version bumped with release; cleanup behavior unchanged",
+    "Portable error-boundary tests and native macOS ACL/xattr preservation cases added"
+  ]
 }

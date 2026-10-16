@@ -11,7 +11,7 @@ import sys
 import uuid
 
 NAME = "claude-account-cleanup"
-VERSION = "1.2.0"
+VERSION = "1.2.1"
 FILES = ("SKILL.md", "LICENSE", "agents/openai.yaml", "scripts/cleanup_guard.py",
          "scripts/keychain_guard.py", "scripts/install_skill.py",
          "references/platforms.md", "references/operations.md",

@@ -7,7 +7,7 @@ import path from 'node:path';
 import crypto from 'node:crypto';
 import {fileURLToPath} from 'node:url';
 
-export const VERSION = '1.2.0';
+export const VERSION = '1.2.1';
 export const TYPES = 'local_storage,indexeddb,cache_storage,service_workers,file_systems,websql,storage_buckets';
 export class BrowserError extends Error {}
 const fail = message => { throw new BrowserError(message); };

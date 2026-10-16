@@ -3,6 +3,7 @@ Artifacts are kept; specify --artifact-dir to choose the parent directory.
 """
 import argparse
 import copy
+import errno
 import io
 import json
 import os
@@ -78,6 +79,58 @@ class CleanupTests(unittest.TestCase):
         self.assertEqual(guard.apply(plan)['status'], 'dry-run')
         roots, _ = guard.validated_spec(self.spec)
         self.assertEqual(guard.snapshot(roots), plan['before'])
+
+    def test_macos_acl_absence_requires_enoent_on_valid_descriptor(self):
+        from types import SimpleNamespace
+        from unittest.mock import Mock
+        def no_acl(fd, kind):
+            os.fstat(fd)
+            ctypes_error = errno.ENOENT
+            guard.ctypes.set_errno(ctypes_error)
+            return None
+        libc = SimpleNamespace(acl_get_fd_np=Mock(side_effect=no_acl),
+                               acl_to_text=Mock(), acl_free=Mock())
+        before = self.state.read_bytes()
+        with patch.object(guard.ctypes, 'CDLL', return_value=libc):
+            self.assertIsNone(guard.mac_acl_fingerprint(self.state, self.state.lstat()))
+        self.assertEqual(self.state.read_bytes(), before)
+        libc.acl_free.assert_not_called()
+
+    def test_macos_acl_permission_or_unknown_failure_is_not_absence(self):
+        from types import SimpleNamespace
+        from unittest.mock import Mock
+        for error in [errno.EACCES, errno.EPERM, errno.ENOTSUP, 0]:
+            def failed(fd, kind):
+                guard.ctypes.set_errno(error)
+                return None
+            libc = SimpleNamespace(acl_get_fd_np=Mock(side_effect=failed),
+                                   acl_to_text=Mock(), acl_free=Mock())
+            before = self.state.read_bytes()
+            with patch.object(guard.ctypes, 'CDLL', return_value=libc):
+                with self.assertRaises(guard.GuardError):
+                    guard.mac_acl_fingerprint(self.state, self.state.lstat())
+            self.assertEqual(self.state.read_bytes(), before)
+
+    @unittest.skipUnless(sys.platform == 'darwin', 'Native macOS empty ACL')
+    def test_macos_absent_extended_acl_is_not_a_read_failure(self):
+        subprocess.run(['chmod', '-N', str(self.state)], check=True)
+        self.assertIsNone(guard.metadata(self.state)['acl'])
+        plan = guard.prepare(self.spec)
+        self.assertEqual(guard.apply(plan, True)['status'], 'verified')
+        self.assertIsNone(guard.metadata(self.state)['acl'])
+
+    @unittest.skipUnless(sys.platform == 'darwin', 'Native macOS ACL and xattr')
+    def test_macos_nonempty_acl_and_xattr_are_preserved(self):
+        import pwd
+        user = pwd.getpwuid(os.getuid()).pw_name
+        acl = 'user:' + user + ' allow read,write,readattr,writeattr,readextattr,writeextattr,readsecurity'
+        subprocess.run(['chmod', '+a', acl, str(self.state)], check=True)
+        os.setxattr(self.state, 'com.example.claude-cleanup-fixture', b'FAKE_KEEP')
+        before = guard.metadata(self.state)
+        self.assertIsNotNone(before['acl'])
+        plan = guard.prepare(self.spec)
+        self.assertEqual(guard.apply(plan, True)['status'], 'verified')
+        self.assertEqual(guard.metadata(self.state), before)
 
     @unittest.skipUnless(os.name == 'nt', 'Windows timestamp compatibility')
     def test_windows_existing_file_metadata_uses_consistent_handle_timestamps(self):

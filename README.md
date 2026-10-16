@@ -4,7 +4,7 @@ A Codex skill for scoped cleanup of retired Claude logins on Windows and macOS, 
 
 处理已停用的旧 Claude 登录、浏览器站点数据和经当前版本核实的旧随机客户端标识。由 Codex 定位、执行并核验，保留项目、会话、MCP 授权和网络配置。
 
-**当前清理实现：v1.2.0 · 许可证：MIT**
+**当前清理实现：v1.2.1 · 许可证：MIT**
 
 ## 安装
 
@@ -57,7 +57,7 @@ python -B -X utf8 run_validation.py
 
 测试只访问自动创建的虚构账号与工作目录，并从虚构用户目录安装后的副本执行。不会安装到真实个人 Skill 目录，也不会清理真实账号。
 
-原 v1.2.0 验证包括：74 项 Python 测试（核心 35、安装更新 12、旧标识 8、扩展异常 19），14 项浏览器协议测试和 11 项真实 Chromium 隔离检查。原始范围见 [验证说明](docs/validation-summary.txt) 与 [验证数据](docs/validation-results.json)；模拟结果不能代替 Mac 实机验证。
+历史 v1.2.0 验证包括：74 项 Python 测试（核心 35、安装更新 12、旧标识 8、扩展异常 19），14 项浏览器协议测试和 11 项真实 Chromium 隔离检查。原始范围见 [验证说明](docs/validation-summary.txt) 与 [验证数据](docs/validation-results.json)；模拟结果不能代替 Mac 实机验证。
 
 有 Node.js 22+ 时默认增加协议测试；如已有 Playwright / Chromium，可指定现有模块并运行隔离浏览器测试：
 
