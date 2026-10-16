@@ -30,4 +30,27 @@ jobs:
           node-version: "22"
       - name: Test installation and cleanup using only virtual data
         run: python -B -X utf8 run_validation.py
+      - name: Diagnose failed virtual fixtures
+        if: failure()
+        shell: python
+        run: |
+          import json, pathlib, sys, tempfile, traceback
+          root = pathlib.Path.cwd()
+          for log in sorted((root / 'test-runs').glob('*/*.log')):
+              print('\n--- ' + log.name + ' ---', flush=True)
+              print(log.read_text(encoding='utf-8', errors='replace')[-24000:], flush=True)
+          if sys.platform == 'darwin':
+              sys.path.insert(0, str(root / 'claude-account-cleanup/scripts'))
+              import cleanup_guard as g
+              with tempfile.TemporaryDirectory(prefix='native-mac-probe-', dir=root / 'test-runs') as folder:
+                  state = pathlib.Path(folder) / '.claude.json'
+                  before = g.encode({'oauthAccount': {'id': 'FAKE-OLD'}, 'projects': {'demo': 'FAKE-KEEP'}})
+                  state.write_bytes(before)
+                  try:
+                      print('Virtual metadata before: ' + json.dumps(g.metadata(state)), flush=True)
+                      g.atomic_replace(state, g.encode({'projects': {'demo': 'FAKE-KEEP'}}), g.digest(before))
+                      print('Virtual metadata after: ' + json.dumps(g.metadata(state)), flush=True)
+                  except Exception:
+                      traceback.print_exc()
+                      raise
 
