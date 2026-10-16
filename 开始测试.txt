@@ -1,4 +1,4 @@
-Claude 清理 Skill 1.2.1｜闲置 Windows 测试包
+Claude 清理 Skill 1.2.2｜闲置 Windows 测试包
 
 把本压缩包交给那台电脑上的 Codex，发送下面一段话：
 

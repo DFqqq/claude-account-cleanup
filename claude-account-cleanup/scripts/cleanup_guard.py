@@ -19,7 +19,7 @@ from types import SimpleNamespace
 from identifier_policy import reset_fields
 
 sys.dont_write_bytecode = True
-VERSION = '1.2.1'
+VERSION = '1.2.2'
 STATE_FIELDS = frozenset({'oauthAccount', 'userID', 'machineID', 'deviceId'})
 CREDENTIAL_FIELDS = frozenset({'claudeAiOauth'})
 REPARSE = 0x400

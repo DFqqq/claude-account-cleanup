@@ -84,7 +84,7 @@ def main():
         if not node:raise RuntimeError('Browser tests require an existing Node.js runtime')
         browser_out=Path(options.browser_artifact_dir).absolute() if options.browser_artifact_dir else Path(tempfile.mkdtemp(prefix='cc-browser-fixture-'))
         run('browser-e2e',[ROOT/'validation/browser_e2e.cjs',browser_out,installed/'scripts/browser_cleanup.mjs'],executable=node)
-    report={'version':'1.2.1','passed':all(x['passed'] for x in results),'system':platform.system(),
+    report={'version':'1.2.2','passed':all(x['passed'] for x in results),'system':platform.system(),
             'python':platform.python_version(),'results':results,'real_account_access':False,
             'real_skill_directory_modified':False,'client_processes_operated':False,'network_used':False,
             'browser_unit_run':bool(node),'browser_e2e_run':options.browser,

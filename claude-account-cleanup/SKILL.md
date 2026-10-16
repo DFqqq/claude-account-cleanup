@@ -6,7 +6,7 @@ description: 清理 Windows 或 macOS 上已停用的旧 Claude 登录及已确�
 
 # Claude 旧账号清理
 
-让员工用一句话完成旧账号处理，由 Codex 定位、执行和核验。现有新账号优先保护。版本 1.2.1。
+让员工用一句话完成旧账号处理，由 Codex 定位、执行和核验。现有新账号优先保护。版本 1.2.2。
 
 验证范围：Windows 原生虚构测试通过；macOS 文件、ACL 与扩展属性已在 GitHub Runner 的虚构数据中验证。真实 Keychain 授权及浏览器、桌面 UI 仍需实机验证，逐入口核验。
 
@@ -72,4 +72,4 @@ description: 清理 Windows 或 macOS 上已停用的旧 Claude 登录及已确�
 
 修改相关逻辑后运行 `python -B -X utf8 tests/test_cleanup.py`、`python -B -X utf8 tests/test_install.py` 、`python -B -X utf8 tests/test_identifiers.py` 和 skill 结构校验；仓库完整隔离测试使用 `run_validation.py`，浏览器协议测试见 `references/browser.md`。所有测试仅使用自动创建的虚构目录。Windows 原生文件替换与 ACL 在 Windows 测；macOS 文件与 ACL 在 macOS 测，真实钥匙串原生调用仍需 Mac 实机专项验证。
 
-设计参考：[cc-clean](https://github.com/luwill/cc-clean) 的精确范围、共用凭据保护和验证思路；此处脚本为独立实现。认证位置以 [官方文档](https://code.claude.com/docs/en/authentication) 和本机版本为准。
+认证位置以 [官方文档](https://code.claude.com/docs/en/authentication) 和本机版本为准；操作范围与保留规则由本项目维护。

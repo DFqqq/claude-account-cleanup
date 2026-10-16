@@ -67,7 +67,6 @@ service 必须是实际核实的 `Claude Code-credentials` 或当前版本相关
 - [Claude Code 本地数据](https://code.claude.com/docs/en/claude-directory)
 - [Windows ReplaceFileW](https://learn.microsoft.com/en-us/windows/win32/api/winbase/nf-winbase-replacefilew)
 - [Apple Security Framework](https://developer.apple.com/documentation/security)
-- [cc-clean 范围与核验思路](https://github.com/luwill/cc-clean)
 
 本技能不会执行网络测试、改遥测开关或时区。macOS fcopyfile、空/非空 ACL 与扩展属性保留已通过 macOS CI 虚构文件验证；真实 Keychain、权限弹窗与用户实际环境仍需实机验证，模拟凭据接口不能代替系统授权验证。
 

@@ -1,10 +1,12 @@
 # Claude Account Cleanup
 
+作者与维护者：[@DFqqq](https://github.com/DFqqq)
+
 A Codex skill for scoped cleanup of retired Claude logins on Windows and macOS, while preserving projects, sessions, MCP authorizations, and network settings.
 
 处理已停用的旧 Claude 登录、浏览器站点数据和经当前版本核实的旧随机客户端标识。由 Codex 定位、执行并核验，保留项目、会话、MCP 授权和网络配置。
 
-**当前清理实现：v1.2.1 · 许可证：MIT**
+**当前清理实现：v1.2.2 · 许可证：MIT**
 
 ## 安装
 
@@ -57,7 +59,7 @@ python -B -X utf8 run_validation.py
 
 测试只访问自动创建的虚构账号与工作目录，并从虚构用户目录安装后的副本执行。不会安装到真实个人 Skill 目录，也不会清理真实账号。
 
-历史 v1.2.0 验证包括：74 项 Python 测试（核心 35、安装更新 12、旧标识 8、扩展异常 19），14 项浏览器协议测试和 11 项真实 Chromium 隔离检查。历史范围见 [验证说明](docs/validation-summary.txt) 与 [验证数据](docs/validation-results.json)。当前 v1.2.1 的 [公开验证记录](docs/public-validation.json) 包括三平台 CI、Mac 原生文件权限用例和本地隔离浏览器结果；不等同于真实账号或 Mac Keychain 验证。
+历史 v1.2.0 验证包括：74 项 Python 测试（核心 35、安装更新 12、旧标识 8、扩展异常 19），14 项浏览器协议测试和 11 项真实 Chromium 隔离检查。历史范围见 [验证说明](docs/validation-summary.txt) 与 [验证数据](docs/validation-results.json)。当前 v1.2.2 的 [公开验证记录](docs/public-validation.json) 包括三平台 CI、Mac 原生文件权限用例和本地隔离浏览器结果；不等同于真实账号或 Mac Keychain 验证。
 
 有 Node.js 22+ 时默认增加协议测试；如已有 Playwright / Chromium，可指定现有模块并运行隔离浏览器测试：
 
@@ -75,11 +77,11 @@ python -B -X utf8 build_release.py
 
 产物包括 Skill ZIP、隔离测试包和 SHA-256 清单，均位于 `dist/`。安装包中的 MIT 许可证随技能保留。
 
-## 贡献与来源
+## 维护与贡献
 
 欢迎提交 Issues / Pull Requests，说明系统版本、客户端版本和经过脱敏的错误信息。请勿上传账号、Cookie、令牌、完整凭据、个人会话或未脱敏的本机路径。
 
-设计参考 [cc-clean](https://github.com/luwill/cc-clean) 的精确范围、共用凭据保护与前后核验思路；本仓库脚本为独立实现。清理字段与客户端机制以实际版本及官方文档为准。
+本项目围绕“保留工作资料、精确处理旧登录、执行前后核验”持续完善。清理字段与客户端机制以实际版本及官方文档为准。
 
 [MIT License](LICENSE) · [技能入口](claude-account-cleanup/SKILL.md) · [浏览器处理](claude-account-cleanup/references/browser.md) · [旧标识依据](claude-account-cleanup/references/identifiers.md)
 

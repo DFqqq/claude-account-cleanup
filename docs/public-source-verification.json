@@ -1,5 +1,5 @@
 {
-  "implementation_version": "1.2.1",
+  "implementation_version": "1.2.2",
   "public_packaging_changes": [
     "MIT license included in the installed skill",
     "Public README and install links",
@@ -16,10 +16,10 @@
     "scripts/browser_cleanup.mjs": "5e6a14a9cf3bd84842ea677be72a1da3e7dc0a26325a89ba7a10128e79c2a15e"
   },
   "release_core_sha256": {
-    "scripts/cleanup_guard.py": "f633a4cdb108bf9fdbc759c2bdc7a3baf4ac0b616563a4b96f65084f41ab9500",
+    "scripts/cleanup_guard.py": "6add07738cea16337c497d8c0313d4e22026598d1eb98adb7e4ae9d22f97cbbc",
     "scripts/keychain_guard.py": "cb4d75ec4701377e926f073555b909b45cb299056e8b29da3403b45ee90cade2",
     "scripts/identifier_policy.py": "5dc5943f0d10c33d2b02bcf41300a97b331b0887fe03d53ead149834949e9b68",
-    "scripts/browser_cleanup.mjs": "381eeaad416f48a399e841261aea7d4cc4c04a9bd13d53a4142c6848e9d63bef"
+    "scripts/browser_cleanup.mjs": "d6e9dabd3605095307d97efdd91229bd5502d95640f081b09a7906711e9417ab"
   },
   "implementation_changes": [
     "macOS: inspect an already-open file descriptor and represent NULL/ENOENT as no extended ACL; reject permission and unknown failures",
@@ -27,5 +27,6 @@
     "Portable error-boundary tests and native macOS ACL/xattr preservation cases added",
     "Darwin native descriptor APIs enumerate and fingerprint extended attributes; no assumption that Linux-only os xattr functions exist"
   ],
-  "native_macos_file_acl_xattr_ci_passed": true
+  "native_macos_file_acl_xattr_ci_passed": true,
+  "functional_baseline": "v1.2.1; no cleanup behavior changes in v1.2.2"
 }
