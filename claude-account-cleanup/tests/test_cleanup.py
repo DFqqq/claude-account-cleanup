@@ -125,9 +125,10 @@ class CleanupTests(unittest.TestCase):
         user = pwd.getpwuid(os.getuid()).pw_name
         acl = 'user:' + user + ' allow read,write,readattr,writeattr,readextattr,writeextattr,readsecurity'
         subprocess.run(['chmod', '+a', acl, str(self.state)], check=True)
-        os.setxattr(self.state, 'com.example.claude-cleanup-fixture', b'FAKE_KEEP')
+        subprocess.run(['xattr', '-w', 'com.example.claude-cleanup-fixture', 'FAKE_KEEP', str(self.state)], check=True)
         before = guard.metadata(self.state)
         self.assertIsNotNone(before['acl'])
+        self.assertEqual(before['xattrs']['com.example.claude-cleanup-fixture'], guard.digest(b'FAKE_KEEP'))
         plan = guard.prepare(self.spec)
         self.assertEqual(guard.apply(plan, True)['status'], 'verified')
         self.assertEqual(guard.metadata(self.state), before)

@@ -265,6 +265,42 @@ def mac_acl_fingerprint(path, expected):
         os.close(fd)
 
 
+def mac_xattr_fingerprints(path, expected):
+    """Use Darwin's descriptor APIs; Python's os xattr methods are Linux-only."""
+    libc = ctypes.CDLL('/usr/lib/libSystem.B.dylib', use_errno=True)
+    libc.flistxattr.argtypes = [ctypes.c_int, ctypes.c_void_p, ctypes.c_size_t, ctypes.c_int]
+    libc.flistxattr.restype = ctypes.c_ssize_t
+    libc.fgetxattr.argtypes = [ctypes.c_int, ctypes.c_char_p, ctypes.c_void_p,
+                              ctypes.c_size_t, ctypes.c_uint32, ctypes.c_int]
+    libc.fgetxattr.restype = ctypes.c_ssize_t
+    fd = os.open(path, os.O_RDONLY | getattr(os, 'O_NOFOLLOW', 0))
+    try:
+        actual = os.fstat(fd)
+        keys = ('st_dev', 'st_ino', 'st_mode', 'st_uid', 'st_gid')
+        require(all(getattr(actual, key) == getattr(expected, key) for key in keys),
+                'File changed during macOS attribute inspection')
+        size = libc.flistxattr(fd, None, 0, 0)
+        require(0 <= size <= 1024 * 1024, 'Cannot inspect macOS attribute names')
+        if not size:
+            return {}
+        names = ctypes.create_string_buffer(size)
+        require(libc.flistxattr(fd, names, size, 0) == size,
+                'macOS attributes changed during inspection')
+        result = {}
+        for name in names.raw[:size].split(b'\0'):
+            if not name:
+                continue
+            count = libc.fgetxattr(fd, name, None, 0, 0, 0)
+            require(0 <= count <= 32 * 1024 * 1024, 'Cannot inspect macOS attribute value')
+            value = ctypes.create_string_buffer(count)
+            require(libc.fgetxattr(fd, name, value, count, 0, 0) == count,
+                    'macOS attribute value changed during inspection')
+            result[os.fsdecode(name)] = digest(value.raw[:count])
+        return result
+    finally:
+        os.close(fd)
+
+
 def metadata(path):
     meta = path.lstat()
     if os.name == 'nt':
@@ -275,6 +311,7 @@ def metadata(path):
                  for name in os.listxattr(path, follow_symlinks=False)}
     result = {'mode': stat.S_IMODE(meta.st_mode), 'uid': meta.st_uid, 'gid': meta.st_gid, 'xattrs': attrs}
     if sys.platform == 'darwin':
+        result['xattrs'] = mac_xattr_fingerprints(path, meta)
         result['acl'] = mac_acl_fingerprint(path, meta)
     return result
 
