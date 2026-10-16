@@ -1,0 +1,129 @@
+{
+  "version": "1.2.0",
+  "date": "2026-10-14",
+  "passed": true,
+  "system": "Windows",
+  "python": "3.11.7",
+  "file_and_install_tests": {
+    "passed": 74,
+    "core": 35,
+    "installation_and_upgrade": 12,
+    "identifiers": 8,
+    "extended": 19
+  },
+  "browser_protocol_tests": 14,
+  "browser_e2e": {
+    "version": "1.2.0",
+    "passed": true,
+    "checks": [
+      "installed helper creates a redacted plan from original fixture context",
+      "dry run preserves fake login and open drafts",
+      "selected open-tab sessionStorage cleared and only selected tabs closed",
+      "target and child localStorage IndexedDB CacheStorage are empty after reopening",
+      "pagehide unload and visibilitychange cannot leave recreated storage after closure",
+      "exact target cookies removed; company and shared parent cookies retained",
+      "company and shared Console storage preserved",
+      "separate new-account context unchanged",
+      "saved work drafts retained",
+      "no credential values in plans or receipts",
+      "new login after plan blocks stale cleanup"
+    ],
+    "engine": "151.0.7922.34",
+    "intercepted_local_requests": 7,
+    "real_account_access": false,
+    "real_skill_directory_modified": false,
+    "company_network_modified": false,
+    "boundary": "Real Chromium with isolated synthetic profile and locally fulfilled pages; not a real Claude login or macOS UI test."
+  },
+  "run_results": [
+    {
+      "name": "install",
+      "passed": true,
+      "returncode": 0,
+      "tests": null,
+      "seconds": 1.89
+    },
+    {
+      "name": "repeat-install",
+      "passed": true,
+      "returncode": 0,
+      "tests": null,
+      "seconds": 0.52
+    },
+    {
+      "name": "cleanup-core",
+      "passed": true,
+      "returncode": 0,
+      "tests": 35,
+      "seconds": 15.05
+    },
+    {
+      "name": "installation",
+      "passed": true,
+      "returncode": 0,
+      "tests": 12,
+      "seconds": 8.94
+    },
+    {
+      "name": "identifiers",
+      "passed": true,
+      "returncode": 0,
+      "tests": 8,
+      "seconds": 1.16
+    },
+    {
+      "name": "extended",
+      "passed": true,
+      "returncode": 0,
+      "tests": 19,
+      "seconds": 15.58
+    },
+    {
+      "name": "browser-unit",
+      "passed": true,
+      "returncode": 0,
+      "tests": 14,
+      "seconds": 2.56
+    },
+    {
+      "name": "browser-e2e",
+      "passed": true,
+      "returncode": 0,
+      "tests": null,
+      "seconds": 8.49
+    }
+  ],
+  "protected_scope": [
+    "projects",
+    "sessions and history",
+    "MCP authorization",
+    "gateway configuration",
+    "company network configuration",
+    "separate new-account fixtures"
+  ],
+  "scope": "All accounts and work data were synthetic. Installed-copy workflow exercised; normal installed Skill not replaced.",
+  "not_validated": [
+    "Native macOS Keychain and ACL APIs",
+    "Real Claude browser/desktop UI",
+    "New Codex client automatic discovery"
+  ],
+  "fixes": [
+    "Native Windows ChangeTime and preserved DACL",
+    "Scoped browser cleanup and after-close rewrite protection",
+    "Version-evidenced old random identifier reset",
+    "Hash-verified install and explicit upgrade with previous Skill retained",
+    "Bounded verified retries for native Windows sharing errors; preserve work candidate on incomplete native replacement"
+  ],
+  "validation_source": "Final release ZIP extracted, hash-checked, installed into a fictional user root, and exercised through cleanup",
+  "release_artifacts": {
+    "claude-account-cleanup-v1.2.0.zip": {
+      "sha256": "5707b19cb34dc9de6e13cd6b77290f81ad4b203825558314aa3df7f4532d3886",
+      "bytes": 44649
+    },
+    "Claude清理Skill-闲置Windows测试包-v1.2.0.zip": {
+      "sha256": "b558577b142eda1d6aea7489954417682be2894868a7efaf7ed95e96cf6d8cc1",
+      "bytes": 60941
+    }
+  },
+  "final_check_count": 99
+}

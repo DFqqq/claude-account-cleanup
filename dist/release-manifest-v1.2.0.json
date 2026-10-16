@@ -1,0 +1,35 @@
+{
+  "version": "1.2.0",
+  "source_files": {
+    "claude-account-cleanup/LICENSE": "f6babf2a966aaf4432bb9773853bc1aafa76bc5ec4065e7831a0cb1dccad4527",
+    "claude-account-cleanup/SKILL.md": "d16810bb1eb2ec9c964727c786c9c4696548f46bc591cc645b2318a82d3d25fd",
+    "claude-account-cleanup/agents/openai.yaml": "fbe750860e73d235e19c9ef19fe772c12b8edd0264a1fdd48b8257013d353406",
+    "claude-account-cleanup/references/browser.md": "16fd86fb2c84f9030aaca8a0c688e6b118f73e42d78c85732b46d6dec570e645",
+    "claude-account-cleanup/references/identifiers.md": "0e6bd3a48dc8547960f8186d7550e69b066f69765036f4ae3fbd10f0337a0a11",
+    "claude-account-cleanup/references/operations.md": "85e41fd144abaaddd95186cb55057c1fe5baf428ab3e05385a04fb6d5036cadf",
+    "claude-account-cleanup/references/platforms.md": "be3e2b9c7b37248d6853a644b560b8bd844b0290966a0b6ae29bfeaeeb633fb6",
+    "claude-account-cleanup/scripts/browser_cleanup.mjs": "5e6a14a9cf3bd84842ea677be72a1da3e7dc0a26325a89ba7a10128e79c2a15e",
+    "claude-account-cleanup/scripts/cleanup_guard.py": "5123fc6186741d812c78daced07ee2e34d91f134268f8cc70058187a0ff36fa8",
+    "claude-account-cleanup/scripts/identifier_policy.py": "5dc5943f0d10c33d2b02bcf41300a97b331b0887fe03d53ead149834949e9b68",
+    "claude-account-cleanup/scripts/install_skill.py": "462e318e918894fb18480651c8b898e5ff548734c471666defe37947f58dea52",
+    "claude-account-cleanup/scripts/keychain_guard.py": "cb4d75ec4701377e926f073555b909b45cb299056e8b29da3403b45ee90cade2",
+    "claude-account-cleanup/tests/test_cleanup.py": "6e3798e32ca46f412118cec64baeb1e083cdbf290cb71b970919a0dbccba7d62",
+    "claude-account-cleanup/tests/test_identifiers.py": "b91162699ba9fa8829b509f979533615b9c5de5da0618c2e59d53fc949fdf687",
+    "claude-account-cleanup/tests/test_install.py": "6cfee807d3d3a483de377ecb1c550381596e8f73e34374daca8396343cbce3b4",
+    "run_validation.py": "13de0d39d73f0980aa1df875e268006ffc54dea00f5ff037ce00cc21a408842b",
+    "validation/browser_e2e.cjs": "4ba257e2a7eb2b8756d364208862d873bd25c465140d7e5a18b9ba09ecf0be88",
+    "validation/test_browser.mjs": "351e925c70b113ba3bb710c109a558ae7b0275e2c7374cf7cced7801a03fa610",
+    "validation/test_extended.py": "d18f3393df9e575775d69749b74bfb0b49b2ad79f507a7e7b934f000d6d920a6",
+    "开始测试.txt": "8e69c60d6603bd470de23bc4506cdaec68b4451e45c177321ff48dbe17e1567f"
+  },
+  "artifacts": {
+    "claude-account-cleanup-v1.2.0.zip": {
+      "sha256": "d009a013785a7057a7413496fd8f1425eb7b1eac0bcfd45c737f22ee724d50cd",
+      "bytes": 45476
+    },
+    "Claude清理Skill-闲置Windows测试包-v1.2.0.zip": {
+      "sha256": "706f4b14aef331d028aba0b20ce6c8d183db8e6657f9f888ca65053ceb9f29c6",
+      "bytes": 62024
+    }
+  }
+}

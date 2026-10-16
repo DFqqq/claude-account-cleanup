@@ -1,0 +1,13 @@
+{
+  "implementation_version": "1.2.0",
+  "platform": "Windows",
+  "python": "3.11.7",
+  "file_install_identifier_extended_tests": 74,
+  "browser_protocol_tests": 14,
+  "isolated_chromium_checks": 11,
+  "passed": true,
+  "core_implementation_unchanged": true,
+  "browser_fixture_note": "A deep test profile failed to initialize CacheStorage; the same installed helper passed all 11 checks with a fresh short-path profile.",
+  "real_account_access": false,
+  "native_macos_keychain_tested": false
+}

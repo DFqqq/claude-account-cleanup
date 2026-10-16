@@ -1,0 +1,25 @@
+{
+  "baseline_unique_passed": 63,
+  "independent_file_unique_passed": 9,
+  "patched_native_browser_cases_passed": 2,
+  "confirmed_issue": "post-close persistent storage recreation",
+  "issue_status": "fixed-and-independently-retested",
+  "native_mac_tested": false,
+  "patched_browser_sha256": "5e6a14a9cf3bd84842ea677be72a1da3e7dc0a26325a89ba7a10128e79c2a15e",
+  "lf_normalized_sha256": "5e6a14a9cf3bd84842ea677be72a1da3e7dc0a26325a89ba7a10128e79c2a15e",
+  "final_native_close_status": "cleared-selected-origins",
+  "final_native_failure_status": "partial",
+  "final_native_failure_scripts_resumed": true,
+  "close_target_enumeration_race": "observed-before-bounded-wait-fix; final native case passed",
+  "windows_replacement_additional_tests_passed": 4,
+  "final_cleanup_guard_sha256": "5123fc6186741d812c78daced07ee2e34d91f134268f8cc70058187a0ff36fa8",
+  "windows_recovery_link_issue": "found-and-fixed; native hardlink test passed",
+  "version": "1.2.0",
+  "release_browser_sha256": "5e6a14a9cf3bd84842ea677be72a1da3e7dc0a26325a89ba7a10128e79c2a15e",
+  "release_cleanup_sha256": "5123fc6186741d812c78daced07ee2e34d91f134268f8cc70058187a0ff36fa8",
+  "limits": [
+    "Native macOS Keychain/ACL not executed",
+    "Browser final localStorage/IDB/cache reads unavailable after closing; receipt limits coverage",
+    "Only fictional data, no real account data accessed"
+  ]
+}

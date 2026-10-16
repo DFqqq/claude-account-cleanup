@@ -1,0 +1,12 @@
+Claude 清理 Skill 1.2.0｜闲置 Windows 测试包
+
+把本压缩包交给那台电脑上的 Codex，发送下面一段话：
+
+请解压这个测试包，先阅读 run_validation.py 并核对测试范围，找到本机已有 Python 3.10+，运行 python -B -X utf8 run_validation.py。只在测试包目录内验证安装、重复安装和虚构旧号清理；不要安装到我的真实技能目录，不读取真实 Claude、浏览器或凭据，不启动或关闭客户端，不改公司网络。完成后告诉我通过数、失败原因和 result.json 的位置。若缺少 Python 或系统权限，一次说明需要我配合的动作。
+
+脚本自动生成虚构账号、项目、会话、MCP 与网络配置样本，再执行测试；不需要提供账号、密码、验证码或证件。
+安装测试的目标是包内 virtual-user，不能代替真实 Codex 客户端的技能发现验证。
+缺少 Python 时不会自动安装软件。macOS 原生钥匙串及真实 Claude UI 不在本包验收范围内。
+结果位于 test-runs/本次运行目录/result.json；日志与样本可保留供复核，只有虚构数据。
+
+如明确需要真实浏览器隔离测试，且本机已有 Node.js 22+、Playwright 和 Chromium，可另运行 run_validation.py --browser --node 实际Node路径。这只启动新建虚构资料夹的无头浏览器，页面由本地拦截提供，不访问真实 Claude；不操作现有客户端。

@@ -1,0 +1,14 @@
+__pycache__/
+*.py[cod]
+.DS_Store
+Thumbs.db
+test-runs/
+test-artifacts*/
+node_modules/
+.env
+*.log
+
+*.pem
+*.key
+.env.*
+publication-*.json

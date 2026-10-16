@@ -1,0 +1,4 @@
+# Preserve bytes covered by package SHA-256 manifests on all platforms.
+* -text
+*.zip binary
+
