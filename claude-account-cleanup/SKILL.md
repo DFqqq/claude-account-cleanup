@@ -8,7 +8,7 @@ description: 清理 Windows 或 macOS 上已停用的旧 Claude 登录及已确�
 
 让员工用一句话完成旧账号处理，由 Codex 定位、执行和核验。现有新账号优先保护。版本 1.2.1。
 
-验证范围：Windows 文件处理已做原生虚构数据测试；macOS 提供文件/钥匙串适配与模拟测试，原生系统调用尚待 Mac 实机验证。浏览器与桌面 UI 操作依赖当前 Agent 的控制工具，需逐入口核验。
+验证范围：Windows 原生虚构测试通过；macOS 文件、ACL 与扩展属性已在 GitHub Runner 的虚构数据中验证。真实 Keychain 授权及浏览器、桌面 UI 仍需实机验证，逐入口核验。
 
 建议调用：`使用 $claude-account-cleanup 完整清理旧 Claude 登录并重置旧标识；尚未登录新号，保留项目、会话、MCP 授权和公司网络配置。`
 
@@ -70,6 +70,6 @@ description: 清理 Windows 或 macOS 上已停用的旧 Claude 登录及已确�
 
 ## 维护与验证
 
-修改相关逻辑后运行 `python -B -X utf8 tests/test_cleanup.py`、`python -B -X utf8 tests/test_install.py` 、`python -B -X utf8 tests/test_identifiers.py` 和 skill 结构校验；仓库完整隔离测试使用 `run_validation.py`，浏览器协议测试见 `references/browser.md`。所有测试仅使用自动创建的虚构目录。Windows 原生文件替换与 ACL 在 Windows 测；macOS 钥匙串原生调用需 Mac 实机专项验证，Windows 上的模拟测试不算 Mac 实机通过。
+修改相关逻辑后运行 `python -B -X utf8 tests/test_cleanup.py`、`python -B -X utf8 tests/test_install.py` 、`python -B -X utf8 tests/test_identifiers.py` 和 skill 结构校验；仓库完整隔离测试使用 `run_validation.py`，浏览器协议测试见 `references/browser.md`。所有测试仅使用自动创建的虚构目录。Windows 原生文件替换与 ACL 在 Windows 测；macOS 文件与 ACL 在 macOS 测，真实钥匙串原生调用仍需 Mac 实机专项验证。
 
 设计参考：[cc-clean](https://github.com/luwill/cc-clean) 的精确范围、共用凭据保护和验证思路；此处脚本为独立实现。认证位置以 [官方文档](https://code.claude.com/docs/en/authentication) 和本机版本为准。

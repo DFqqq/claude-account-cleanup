@@ -1,13 +1,24 @@
 {
-  "implementation_version": "1.2.0",
-  "platform": "Windows",
-  "python": "3.11.7",
-  "file_install_identifier_extended_tests": 74,
-  "browser_protocol_tests": 14,
-  "isolated_chromium_checks": 11,
+  "implementation_version": "1.2.1",
   "passed": true,
-  "core_implementation_unchanged": true,
-  "browser_fixture_note": "A deep test profile failed to initialize CacheStorage; the same installed helper passed all 11 checks with a fresh short-path profile.",
+  "ci": {
+    "tested_commit": "8f4d40bdce915b009d5deb4e9251516258b1c279",
+    "url": "https://github.com/DFqqq/claude-account-cleanup/actions/runs/38870350837",
+    "windows": "success",
+    "ubuntu": "success",
+    "macos": "success",
+    "native_macos_acl_and_xattr_cases": "passed"
+  },
+  "local_windows": {
+    "python": "3.11.7",
+    "python_test_definitions": 78,
+    "skipped_macos_only": 2,
+    "browser_protocol_tests": 14,
+    "isolated_chromium_checks": 11,
+    "passed": true
+  },
   "real_account_access": false,
-  "native_macos_keychain_tested": false
+  "native_macos_keychain_tested": false,
+  "browser_desktop_actual_login_ui_tested": false,
+  "browser_fixture_note": "A deep synthetic profile hit a Chromium CacheStorage limit; the installed helper passed all 11 checks using a fresh short-path profile."
 }

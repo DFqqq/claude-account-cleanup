@@ -69,6 +69,6 @@ service 必须是实际核实的 `Claude Code-credentials` 或当前版本相关
 - [Apple Security Framework](https://developer.apple.com/documentation/security)
 - [cc-clean 范围与核验思路](https://github.com/luwill/cc-clean)
 
-本技能不会执行网络测试、改遥测开关或时区。Mac 原生 Keychain 和 fcopyfile 需要实机验证；跨平台虚构数据测试只验证共同算法和模拟凭据接口，不能代替原生系统验证。
+本技能不会执行网络测试、改遥测开关或时区。macOS fcopyfile、空/非空 ACL 与扩展属性保留已通过 macOS CI 虚构文件验证；真实 Keychain、权限弹窗与用户实际环境仍需实机验证，模拟凭据接口不能代替系统授权验证。
 
 Windows 文件短暂占用时仅在旧内容及权限未变的情况下短暂重试；不强退占用程序。回执出现 recovery_file 表示原子替换中断后保留了受限权限的候选文件，其中保留工作配置；先核对原目标与候选内容，再决定接续，不直接删除或盲目覆盖后来出现的新账号。
