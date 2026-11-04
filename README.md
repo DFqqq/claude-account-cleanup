@@ -6,7 +6,7 @@ A Codex skill for scoped cleanup of retired Claude logins on Windows and macOS, 
 
 处理已停用的旧 Claude 登录、浏览器站点数据和经当前版本核实的旧随机客户端标识。由 Codex 定位、执行并核验，保留项目、会话、MCP 授权和网络配置。
 
-**当前清理实现：v1.2.2 · 许可证：MIT**
+**当前清理实现：v1.3.0 · 许可证：MIT**
 
 ## 安装
 
@@ -25,10 +25,10 @@ A Codex skill for scoped cleanup of retired Claude logins on Windows and macOS, 
 确认电脑上的目标旧号已停用、尚未登录新号，再发给 Codex：
 
 ```text
-使用 $claude-account-cleanup 完整清理旧 Claude 登录并重置已确认的旧标识，保留项目、会话、MCP 授权和网络配置；本机尚未登录新号。
+使用 $claude-account-cleanup，完整清理被封旧号。
 ```
 
-默认保护正常新账号及归属不明的入口。不要为了测试对正常账号运行真实清理。
+完成清单覆盖文件、旧标识、钥匙串、浏览器与桌面入口；自动续跑独立剩余项，系统权限需要本人操作时集中提示。默认保护正常新账号及归属不明的入口。不要为了测试对正常账号运行真实清理。
 
 ## 清理与保留范围
 
@@ -47,7 +47,7 @@ A Codex skill for scoped cleanup of retired Claude logins on Windows and macOS, 
 - **Windows：**文件处理、权限保留、安装更新和隔离浏览器测试已验证。
 - **macOS：**文件清理、空 ACL、非空 ACL 和扩展属性保留已在 GitHub macOS Runner 的虚构数据中通过；真实 Keychain 授权、权限弹窗和完整实际使用流程仍待实机验证。
 - **浏览器：**需要原资料夹的可用界面控制或既有授权 CDP。协议工具支持 Chrome / Edge / Chromium，需要已有 Node.js 22+；不需要 npm 依赖。Safari 无专用协议脚本。
-- **桌面版：**依赖宿主 Agent 可用的界面控制工具，独立于文件清理核验。
+- **桌面版：**优先使用现有界面工具，提供精确窗口的 Windows／macOS 原生辅助；控件调用与退出结果分别核验。Windows 原生桥接在独立桌面的虚构应用中验证，官方 Claude 桌面版真实登录及 Mac 系统授权仍需实机验证。
 
 ## 虚构数据测试
 
@@ -59,7 +59,7 @@ python -B -X utf8 run_validation.py
 
 测试只访问自动创建的虚构账号与工作目录，并从虚构用户目录安装后的副本执行。不会安装到真实个人 Skill 目录，也不会清理真实账号。
 
-历史 v1.2.0 验证包括：74 项 Python 测试（核心 35、安装更新 12、旧标识 8、扩展异常 19），14 项浏览器协议测试和 11 项真实 Chromium 隔离检查。历史范围见 [验证说明](docs/validation-summary.txt) 与 [验证数据](docs/validation-results.json)。当前 v1.2.2 的 [公开验证记录](docs/public-validation.json) 包括三平台 CI、Mac 原生文件权限用例和本地隔离浏览器结果；不等同于真实账号或 Mac Keychain 验证。
+历史 v1.2.0 验证包括：74 项 Python 测试（核心 35、安装更新 12、旧标识 8、扩展异常 19），14 项浏览器协议测试和 11 项真实 Chromium 隔离检查。历史范围见 [验证说明](docs/validation-summary.txt) 与 [验证数据](docs/validation-results.json)。当前 v1.3.0 的 [公开验证记录](docs/public-validation.json) 包括三平台 CI、Mac 原生文件权限用例和本地隔离浏览器结果；不等同于真实账号或 Mac Keychain 验证。
 
 有 Node.js 22+ 时默认增加协议测试；如已有 Playwright / Chromium，可指定现有模块并运行隔离浏览器测试：
 

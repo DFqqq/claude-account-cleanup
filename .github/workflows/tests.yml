@@ -30,6 +30,19 @@ jobs:
           node-version: "22"
       - name: Test installation and cleanup using only virtual data
         run: python -B -X utf8 run_validation.py
+      - name: Compile macOS accessibility adapter without running it
+        if: runner.os == 'macOS'
+        run: osacompile -o "${{ runner.temp }}/cleanup-native-ui.scpt" claude-account-cleanup/scripts/native_ui_macos.applescript
+      - name: Parse Windows accessibility adapter without operating a window
+        if: runner.os == 'Windows'
+        shell: pwsh
+        run: |
+          $parseTokens = $null
+          $parseErrors = $null
+          [void][System.Management.Automation.Language.Parser]::ParseFile(
+            (Join-Path $PWD 'claude-account-cleanup/scripts/native_ui_windows.ps1'),
+            [ref]$parseTokens, [ref]$parseErrors)
+          if ($parseErrors.Count) { throw 'Native adapter has syntax errors' }
       - name: Diagnose failed virtual fixtures
         if: failure()
         shell: python

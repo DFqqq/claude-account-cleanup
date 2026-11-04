@@ -11,13 +11,16 @@ import sys
 import uuid
 
 NAME = "claude-account-cleanup"
-VERSION = "1.2.2"
+VERSION = "1.3.0"
 FILES = ("SKILL.md", "LICENSE", "agents/openai.yaml", "scripts/cleanup_guard.py",
          "scripts/keychain_guard.py", "scripts/install_skill.py",
          "references/platforms.md", "references/operations.md",
          "tests/test_cleanup.py", "tests/test_install.py",
          "scripts/identifier_policy.py", "scripts/browser_cleanup.mjs",
-         "references/identifiers.md", "references/browser.md", "tests/test_identifiers.py")
+         "references/identifiers.md", "references/browser.md", "tests/test_identifiers.py",
+         "scripts/completion.py", "scripts/identifier_probe.py", "scripts/native_ui.py",
+         "scripts/native_ui_windows.ps1", "scripts/native_ui_macos.applescript",
+         "references/completion.md", "tests/test_completion.py", "tests/test_native_ui.py")
 
 class InstallError(Exception):
     pass

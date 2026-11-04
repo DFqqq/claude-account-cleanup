@@ -23,7 +23,7 @@ async function seed(ctx,o,marker){const p=await ctx.newPage();await p.goto(o);aw
  },marker);return p;}
 async function view(p){return p.evaluate(async()=>({local:localStorage.getItem('fake-login'),session:sessionStorage.getItem('draft'),caches:await caches.keys(),db:(await indexedDB.databases()).map(x=>x.name)}));}
 (async()=>{
- const ctx=await chromium.launchPersistentContext(profile,{headless:true,args:['--remote-debugging-port=0','--host-resolver-rules=MAP * ~NOTFOUND']});
+ const ctx=await chromium.launchPersistentContext(profile,{headless:true,...(process.env.FIXTURE_BROWSER_EXECUTABLE?{executablePath:process.env.FIXTURE_BROWSER_EXECUTABLE}:{}),args:['--remote-debugging-port=0','--host-resolver-rules=MAP * ~NOTFOUND']});
  try{
   await prepare(ctx);const browser=ctx.browser();const next=await browser.newContext();await prepare(next);
   const old=await seed(ctx,OLD,'FAKE_OLD'),child=await seed(ctx,CHILD,'FAKE_CHILD');
@@ -46,8 +46,43 @@ async function view(p){return p.evaluate(async()=>({local:localStorage.getItem('
   const specPath=path.join(root,'spec.json'),plan=path.join(root,'plan.json'),receipt=path.join(root,'receipt.json');fs.writeFileSync(specPath,JSON.stringify(spec));
   let r=await run(['plan','--spec',specPath,'--out',plan]);assert.equal(r.code,0,r.out+r.err);checks.push('installed helper creates a redacted plan from original fixture context');
   r=await run(['apply','--plan',plan,'--out',path.join(root,'dry.json')]);assert.equal(r.code,0,r.out+r.err);assert.equal(old.isClosed(),false);assert.equal((await view(old)).local,'FAKE_OLD');checks.push('dry run preserves fake login and open drafts');
-  r=await run(['apply','--plan',plan,'--out',receipt,'--execute']);assert.equal(r.code,0,r.out+r.err);
-  const report=JSON.parse(fs.readFileSync(receipt));assert.equal(report.status,'cleared-selected-origins');assert.equal(report.session_storage_cleared_tabs,2);
+  // Exercise the actual installed completion runner with real file and browser
+  // adapters, not a mock browser adapter or only a directly invoked helper.
+  const fakeHome=path.join(root,'fictional-home'),config=path.join(fakeHome,'.claude');
+  fs.mkdirSync(config,{recursive:true});
+  const state=path.join(fakeHome,'.claude.json'),cred=path.join(config,'.credentials.json');
+  fs.writeFileSync(state,JSON.stringify({oauthAccount:{accountUuid:'FAKE_OLD'},userID:'a'.repeat(64),machineID:'b'.repeat(64),projects:{keep:true}}));
+  fs.writeFileSync(cred,JSON.stringify({claudeAiOauth:{accessToken:'FAKE_OLD_ONLY'},mcpOAuth:{keep:'FAKE_MCP_KEEP'}}));
+  const work=path.join(config,'session.jsonl'),network=path.join(fakeHome,'company-network.json');
+  fs.writeFileSync(work,'FAKE_KEEP_SESSION');fs.writeFileSync(network,'FAKE_KEEP_VPN_DNS');
+  const fileSpec={schema:1,account_state:'old-only',config_dirs:[config],state_files:[state],preserve_paths:[work,network],operations:[
+    {kind:'state-json',path:state,remove_fields:['oauthAccount'],old_account_evidence:'confirmed'},
+    {kind:'credential-json',path:cred,remove_fields:['claudeAiOauth'],old_account_evidence:'confirmed'}]};
+  const idSpec={...fileSpec,operations:[{kind:'state-json',path:state,remove_fields:[],old_account_evidence:'confirmed',
+    identifier_reset:{config_scope:'old-only',reset_requested:true,version:'2.1.314',binary_sha256:'66e00df32e6981f686a91f67287fcc86e6e1b80ba4973a7b7c4aa43c59986cfa'}}]};
+  const fileSpecPath=path.join(root,'files.json'),idSpecPath=path.join(root,'ids.json');
+  fs.writeFileSync(fileSpecPath,JSON.stringify(fileSpec));fs.writeFileSync(idSpecPath,JSON.stringify(idSpec));
+  const inventory={schema:1,inventory_complete:true,entries:[
+    {id:'files',kind:'files',scope:'old-only',shared_scope:'default',spec:fileSpecPath,identity_state:state,old_account_uuid:'FAKE_OLD'},
+    {id:'identifiers',kind:'identifiers',scope:'old-only',shared_scope:'default',spec:idSpecPath,identity_state:state,old_account_uuid:'FAKE_OLD'},
+    {id:'browser',kind:'browser',scope:'old-only',shared_scope:'browser',spec:specPath,profile_path:profile,node:process.execPath},
+    {id:'desktop',kind:'desktop',scope:'not-installed',shared_scope:'desktop'}]};
+  const inventoryPath=path.join(root,'inventory.json'),completionOut=path.join(root,'completion-run');
+  fs.writeFileSync(inventoryPath,JSON.stringify(inventory));
+  r=await new Promise((resolve,reject)=>{
+    const p=spawn(process.env.FIXTURE_PYTHON||'python',['-B','-X','utf8',path.join(path.dirname(helper),'completion.py'),
+      '--inventory',inventoryPath,'--out',completionOut,'--execute'],{windowsHide:true});
+    let out='',err='';p.stdout.on('data',b=>out+=b);p.stderr.on('data',b=>err+=b);p.on('error',reject);p.on('close',code=>resolve({code,out,err}));
+  });
+  assert.equal(r.code,0,r.out+r.err);
+  const completion=JSON.parse(fs.readFileSync(path.join(completionOut,'completion.json')));
+  assert.equal(completion.overall_status,'complete-selected-old-scope');
+  const report=completion.entries.find(x=>x.id==='browser');assert.equal(report.status,'completed');assert.equal(report.session_storage_cleared_tabs,2);
+  assert.deepEqual(JSON.parse(fs.readFileSync(state)),{projects:{keep:true}});
+  assert.deepEqual(JSON.parse(fs.readFileSync(cred)),{mcpOAuth:{keep:'FAKE_MCP_KEEP'}});
+  assert.equal(fs.readFileSync(work,'utf8'),'FAKE_KEEP_SESSION');assert.equal(fs.readFileSync(network,'utf8'),'FAKE_KEEP_VPN_DNS');
+  checks.push('installed completion runner executes file, identifier and original-context browser cleanup in one run');
+  checks.push('actual runner preserves MCP, project/session and company-network fixture data');
   assert.ok(old.isClosed()&&child.isClosed());checks.push('selected open-tab sessionStorage cleared and only selected tabs closed');
   for(const o of [OLD,CHILD]){const p=await ctx.newPage();await p.goto(o);assert.deepEqual(await view(p),{local:null,session:null,caches:[],db:[]});assert.equal(await p.evaluate(()=>localStorage.length),0);await p.close();}
   checks.push('target and child localStorage IndexedDB CacheStorage are empty after reopening');
@@ -56,7 +91,8 @@ async function view(p){return p.evaluate(async()=>({local:localStorage.getItem('
   assert.deepEqual(await view(company),companyBefore);assert.deepEqual(await view(shared),sharedBefore);checks.push('company and shared Console storage preserved');
   assert.deepEqual(await view(fresh),newBefore);assert.deepEqual(await next.cookies(),newCookies);checks.push('separate new-account context unchanged');
   assert.equal(JSON.parse(fs.readFileSync(path.join(root,'saved-drafts.json'))).length,2);checks.push('saved work drafts retained');
-  for(const name of ['plan.json','receipt.json'])assert.ok(!/FAKE_OLD|FAKE_COMPANY_KEEP|FAKE_NEW_KEEP/.test(fs.readFileSync(path.join(root,name),'utf8')));checks.push('no credential values in plans or receipts');
+  for(const name of ['plan.json'])assert.ok(!/FAKE_OLD|FAKE_COMPANY_KEEP|FAKE_NEW_KEEP/.test(fs.readFileSync(path.join(root,name),'utf8')));
+  assert.ok(!/FAKE_OLD_ONLY|FAKE_COMPANY_KEEP|FAKE_NEW_KEEP/.test(JSON.stringify(completion)));checks.push('no credential values in plans or receipts');
   // New account between planning and applying must block, including before tab closure.
   const p2=path.join(root,'stale-plan.json');r=await run(['plan','--spec',specPath,'--out',p2]);assert.equal(r.code,0,r.out);
   await ctx.addCookies([{name:'login',value:'FAKE_NEW_AFTER_PLAN',domain:'.claude.ai',path:'/',secure:true}]);

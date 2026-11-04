@@ -31,7 +31,7 @@ def main():
     parser=argparse.ArgumentParser();parser.add_argument('--manifest-only',action='store_true');args=parser.parse_args()
     source_manifest(ROOT/'claude-account-cleanup')
     skill=['claude-account-cleanup/'+rel for rel in FILES]
-    extras=['run_validation.py','开始测试.txt','validation/test_extended.py','validation/test_browser.mjs','validation/browser_e2e.cjs']
+    extras=['run_validation.py','开始测试.txt','validation/test_extended.py','validation/test_browser.mjs','validation/browser_e2e.cjs','validation/native_ui_windows_e2e.py']
     manifest={'version':VERSION,'files':{p:sha((ROOT/p).read_bytes()) for p in sorted(skill+extras)}}
     write_json(ROOT/'bundle-manifest.json',manifest)
     if args.manifest_only:

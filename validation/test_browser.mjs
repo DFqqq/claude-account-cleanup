@@ -1,7 +1,7 @@
 import {test} from 'node:test';
 import assert from 'node:assert/strict';
 import path from 'node:path';
-import {validate,BrowserScope,BrowserError,CDP} from '../claude-account-cleanup/scripts/browser_cleanup.mjs';
+import {validate,BrowserScope,BrowserError,CDP,applyWithRefresh} from '../claude-account-cleanup/scripts/browser_cleanup.mjs';
 
 const base=()=>({schema:1,endpoint:'ws://127.0.0.1:12345/devtools/browser/fixture-id',
   profile_path:path.resolve('fictional-profile'),profile_confirmed:true,browser_context_id:'old',anchor_target_id:'anchor',
@@ -103,4 +103,52 @@ test('waits for known closing targets but refuses a new target immediately',asyn
   await s.waitClosed([{id:'known'}]);assert.equal(calls,3);
   s.tabs=async()=>[{id:'new-login-tab',origin:'https://claude.ai'}];
   await assert.rejects(s.waitClosed([{id:'known'}]),/new target/);
+});
+
+test('quota-only pre-write drift refreshes once without changing the helper',async()=>{
+  const c=new FakeCDP(),raw=c.call.bind(c);c.quotaDelta=0;
+  c.call=async(m,p,sid)=>{
+    const result=await raw(m,p,sid);
+    if(m==='Storage.getUsageAndQuota'&&p.origin==='https://claude.ai'&&c.local)result.usageBreakdown[0].usage+=c.quotaDelta;
+    return result;
+  };
+  const s=new BrowserScope(c,base());await s.attach();const p=await s.plan();c.quotaDelta=1;
+  const r=await applyWithRefresh(s,p);
+  assert.equal(r.status,'cleared-selected-origins');assert.equal(r.transient_plan_refreshes,1);
+  assert.equal(c.login,null);assert.equal(c.protectedLogin,'FAKE_KEEP');
+});
+
+test('a new cookie prevents refresh and every mutation',async()=>{
+  const c=new FakeCDP(),s=new BrowserScope(c,base());await s.attach();const p=await s.plan();
+  c.login='FAKE_NEW';const marker=c.calls.length;
+  await assert.rejects(applyWithRefresh(s,p),/Login, tabs or logical site storage changed/);
+  assert.equal(c.login,'FAKE_NEW');
+  assert.ok(c.calls.slice(marker).every(x=>!/(clear|delete|closeTarget)/i.test(x.method)));
+});
+
+test('changes to logical site storage forbid refresh',async()=>{
+  const c=new FakeCDP(),raw=c.call.bind(c),s=new BrowserScope(c,base());await s.attach();const p=await s.plan();
+  c.call=async(m,param,sid)=>{
+    const result=await raw(m,param,sid);
+    if(m==='DOMStorage.getDOMStorageItems'&&param.storageId.isLocalStorage&&param.storageId.securityOrigin==='https://claude.ai')result.entries=[['changed','FAKE_NEW_VALUE']];
+    return result;
+  };
+  await assert.rejects(applyWithRefresh(s,p),/Login, tabs or logical site storage changed/);
+  assert.equal(c.login,'FAKE_OLD');
+});
+
+test('a post-write partial failure is never automatically replayed',async()=>{
+  const c=new FakeCDP(),s=new BrowserScope(c,base());await s.attach();const p=await s.plan();c.protocolFails=true;
+  const r=await applyWithRefresh(s,p);assert.equal(r.status,'partial');assert.equal(r.transient_plan_refreshes,0);
+});
+
+test('refresh count remains bounded on continuously changing quota',async()=>{
+  const c=new FakeCDP(),raw=c.call.bind(c);let count=0;
+  c.call=async(m,p,sid)=>{
+    const result=await raw(m,p,sid);
+    if(m==='Storage.getUsageAndQuota')result.usageBreakdown[0].usage+=++count;
+    return result;
+  };
+  const s=new BrowserScope(c,base());await s.attach();const p=await s.plan();const r=await applyWithRefresh(s,p,2);
+  assert.equal(r.status,'blocked');assert.equal(r.transient_plan_refreshes,2);assert.equal(c.login,'FAKE_OLD');
 });

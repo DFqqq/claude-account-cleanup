@@ -6,6 +6,9 @@ import re
 BUILDS = {
     ('2.1.178', '8e82516a82511cb321f3aabe696e5fa6a318c43c2a74d657b867d70adf5e699b'): ('userID',),
     ('2.1.223', 'a708ba811c4cc46907df358e22f2aa6da3dbc28192747e4d3c4a0869752fe722'): ('userID', 'machineID'),
+    # Official Windows x64 npm package; SHA-512 distribution integrity checked.
+    # FL/rPt persist randomBytes(32).toString("hex"); see identifiers.md.
+    ('2.1.314', '66e00df32e6981f686a91f67287fcc86e6e1b80ba4973a7b7c4aa43c59986cfa'): ('userID', 'machineID'),
 }
 
 

@@ -19,6 +19,7 @@ import tempfile
 import uuid
 
 sys.dont_write_bytecode = True
+os.environ['FIXTURE_PYTHON'] = sys.executable
 ROOT = Path(__file__).resolve().parent
 if os.name == 'nt' and not str(ROOT).startswith('\\\\?\\'):
     raw = str(ROOT)
@@ -76,6 +77,8 @@ def main():
     run('cleanup-core',[installed/'tests/test_cleanup.py','--artifact-dir',out/'core-fixtures'])
     run('installation',[installed/'tests/test_install.py','--artifact-dir',out/'install-fixtures'])
     run('identifiers',[installed/'tests/test_identifiers.py','--artifact-dir',out/'identifier-fixtures'])
+    run('completion',[installed/'tests/test_completion.py','--artifact-dir',out/'completion-fixtures'])
+    run('native-adapter-unit',[installed/'tests/test_native_ui.py'])
     run('extended',[ROOT/'validation/test_extended.py','--artifact-dir',out/'extended-fixtures'])
     node=options.node or shutil.which('node')
     if node:
@@ -84,9 +87,9 @@ def main():
         if not node:raise RuntimeError('Browser tests require an existing Node.js runtime')
         browser_out=Path(options.browser_artifact_dir).absolute() if options.browser_artifact_dir else Path(tempfile.mkdtemp(prefix='cc-browser-fixture-'))
         run('browser-e2e',[ROOT/'validation/browser_e2e.cjs',browser_out,installed/'scripts/browser_cleanup.mjs'],executable=node)
-    report={'version':'1.2.2','passed':all(x['passed'] for x in results),'system':platform.system(),
+    report={'version':'1.3.0','passed':all(x['passed'] for x in results),'system':platform.system(),
             'python':platform.python_version(),'results':results,'real_account_access':False,
-            'real_skill_directory_modified':False,'client_processes_operated':False,'network_used':False,
+            'real_skill_directory_modified':False,'real_claude_client_operated':False,'isolated_browser_process_operated':options.browser,'external_network_used':False,
             'browser_unit_run':bool(node),'browser_e2e_run':options.browser,
             'not_covered':['real Claude accounts and browser UI control connection availability','native macOS Keychain and native macOS browser UI']}
     (out/'result.json').write_text(json.dumps(report,ensure_ascii=False,indent=2)+'\n',encoding='utf-8')

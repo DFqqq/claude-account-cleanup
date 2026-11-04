@@ -7,10 +7,45 @@ import argparse
 import ctypes
 import json
 from pathlib import Path
+import re
+import subprocess
 import sys
 
 sys.dont_write_bytecode = True
 from cleanup_guard import GuardError, digest, encode, guard_path, parse_json, require
+
+
+class KeychainError(GuardError):
+    def __init__(self, status, reason):
+        super().__init__(reason)
+        self.status, self.reason = status, reason
+
+
+def check_osstatus(code, operation):
+    if code == 0:
+        return
+    if code in (-128, -25293, -25308):
+        raise KeychainError('needs-system-authorization', 'Allow access to the selected Claude Keychain item in the macOS system dialog')
+    if code == -25291:
+        raise KeychainError('needs-system-unlock', 'Selected Keychain is unavailable; unlock it in macOS before continuing')
+    raise KeychainError('blocked', 'Selected Keychain operation is unavailable: ' + operation)
+
+
+def resolve_account(keychain, service, runner=subprocess.run):
+    """Selected service metadata only. No -g/-w, no password or full dump."""
+    require(sys.platform == 'darwin', 'Selected Keychain metadata requires macOS')
+    require(service.startswith('Claude Code-credentials'), 'Verified Claude service required')
+    path = guard_path(Path(keychain))
+    result = runner(['security', 'find-generic-password', '-s', service, str(path)],
+                    capture_output=True, text=True, encoding='utf-8', errors='replace', timeout=15)
+    if result.returncode:
+        return {'status': 'needs-scope-evidence', 'reason': 'Exact service metadata unavailable; inspect the selected namespace with existing tools'}
+    text = result.stdout + result.stderr
+    account = re.search(r'\"acct\"<blob>=\"([^\r\n\"]{1,200})\"', text)
+    found_service = re.search(r'\"svce\"<blob>=\"([^\r\n\"]{1,200})\"', text)
+    if account and found_service and found_service.group(1) == service:
+        return {'status': 'candidate-account', 'account': account.group(1)}
+    return {'status': 'needs-scope-evidence', 'reason': 'No exact account metadata could be verified'}
 
 
 class MacKeychain:
@@ -34,7 +69,7 @@ class MacKeychain:
         self.security.SecKeychainItemModifyAttributesAndData.argtypes = [ctypes.c_void_p, ctypes.c_void_p, ctypes.c_uint32, ctypes.c_void_p]
         self.security.SecKeychainItemModifyAttributesAndData.restype = ctypes.c_int32
         self.handle = ctypes.c_void_p()
-        require(self.security.SecKeychainOpen(str(self.path).encode('utf-8'), ctypes.byref(self.handle)) == 0, 'Cannot open exact Keychain')
+        check_osstatus(self.security.SecKeychainOpen(str(self.path).encode('utf-8'), ctypes.byref(self.handle)), 'open')
 
     def close(self):
         if self.handle:
@@ -47,7 +82,7 @@ class MacKeychain:
             len(self.account), self.account, ctypes.byref(length), ctypes.byref(data), ctypes.byref(item))
         if code == -25300:
             return None, None  # errSecItemNotFound; other errors are not "absent".
-        require(code == 0, 'Keychain access denied or unavailable')
+        check_osstatus(code, 'read')
         try:
             require(length.value <= 32 * 1024 * 1024, 'Keychain bundle exceeds supported size')
             raw = ctypes.string_at(data, length.value)
@@ -74,7 +109,7 @@ class MacKeychain:
             require(raw is not None and digest(raw) == expected, 'Keychain changed; stale plan refused')
             buffer = ctypes.create_string_buffer(output)
             code = self.security.SecKeychainItemModifyAttributesAndData(item, None, len(output), buffer)
-            require(code == 0, 'Keychain update failed')
+            check_osstatus(code, 'update')
         finally:
             self.release(item)
 
@@ -105,19 +140,27 @@ def clean(backend, expected, execute=False):
 
 def main():
     p = argparse.ArgumentParser(description=__doc__)
-    p.add_argument('command', choices=['inspect', 'clean'])
+    p.add_argument('command', choices=['resolve', 'inspect', 'clean'])
     p.add_argument('--keychain', required=True)
     p.add_argument('--service', required=True)
-    p.add_argument('--account', required=True)
+    p.add_argument('--account')
     p.add_argument('--expected-sha256')
     p.add_argument('--execute', action='store_true')
     args = p.parse_args()
     backend = None
     try:
+        if args.command == 'resolve':
+            result = resolve_account(args.keychain, args.service)
+            print(json.dumps(result))
+            return 0 if result['status'] == 'candidate-account' else 2
+        require(args.account, 'Exact selected account required')
         backend = MacKeychain(args.keychain, args.service, args.account)
         result = inspect(backend) if args.command == 'inspect' else clean(backend, args.expected_sha256, args.execute)
         print(json.dumps(result))
         return 0
+    except KeychainError as error:
+        print(json.dumps({'status': error.status, 'reason': error.reason}))
+        return 2
     except (GuardError, OSError, ValueError, TypeError):
         print(json.dumps({'status': 'unverified', 'reason': 'Keychain denied, changed, unsupported, or post-write verification failed; do not retry blindly'}))
         return 2

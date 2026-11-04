@@ -7,7 +7,7 @@ import path from 'node:path';
 import crypto from 'node:crypto';
 import {fileURLToPath} from 'node:url';
 
-export const VERSION = '1.2.2';
+export const VERSION = '1.3.0';
 export const TYPES = 'local_storage,indexeddb,cache_storage,service_workers,file_systems,websql,storage_buckets';
 export class BrowserError extends Error {}
 const fail = message => { throw new BrowserError(message); };
@@ -248,12 +248,41 @@ export class BrowserScope {
   }); }
 }
 
+export function logicalState(snapshot) {
+  return {...snapshot,states:Object.fromEntries(Object.entries(snapshot.states).map(([o,value])=>{
+    const {usage,...logical}=value;return[o,logical];
+  }))};
+}
+
+export async function applyWithRefresh(scope, original, maxRefreshes=2) {
+  require(Number.isInteger(maxRefreshes)&&maxRefreshes>=0&&maxRefreshes<=2,'Refresh count must be bounded');
+  let plan=original;
+  for(let attempt=0;attempt<=maxRefreshes;attempt++) {
+    try {
+      const result=await scope.apply(plan,true);
+      return {...result,transient_plan_refreshes:attempt};
+    }catch(error) {
+      // Only this exact pre-write check is retriable. Partial writes return
+      // a result and are never replayed. All authentication hashes stay exact.
+      if(!(error instanceof BrowserError)||error.message!=='Browser state changed; old plan refused')throw error;
+      if(attempt===maxRefreshes)return{status:'blocked',reason:'Storage did not stabilize; original profile needs reinspection',transient_plan_refreshes:attempt};
+      await new Promise(resolve=>setTimeout(resolve,250));
+      const next=await scope.plan();
+      require(hash(next.spec)===hash(original.spec),'Browser scope changed; no automatic retry');
+      require(hash(logicalState(next.before))===hash(logicalState(original.before)),
+        'Login, tabs or logical site storage changed; no automatic retry');
+      plan=next;
+    }
+  }
+}
+
 // Reports contain hashes and counts, never raw cookies, localStorage or database contents.
 function load(file) { const raw=fs.readFileSync(file);require(raw.length<=2*1024*1024,'Input too large');return JSON.parse(raw); }
 async function main() {
   const args=process.argv.slice(2),command=args.shift();
-  const flags={};for(let i=0;i<args.length;i++){if(args[i]==='--execute')flags.execute=true;else {require(['--spec','--plan','--out'].includes(args[i]),'Unknown option');flags[args[i].slice(2)]=args[++i];}}
+  const flags={};for(let i=0;i<args.length;i++){if(args[i]==='--execute')flags.execute=true;else if(args[i]==='--retry-transient')flags.retry=true;else {require(['--spec','--plan','--out'].includes(args[i]),'Unknown option');flags[args[i].slice(2)]=args[++i];}}
   require(['plan','apply'].includes(command)&&flags.out,'Use plan --spec or apply --plan, with --out');
+  require(!flags.retry||(command==='apply'&&flags.execute),'Transient refresh requires an authorized apply');
   const plan=command==='apply'?load(flags.plan):null,spec=plan?plan.spec:load(flags.spec);
   validate(spec);
   require(path.isAbsolute(flags.out)&&!fs.existsSync(flags.out),'A fresh absolute report path is required');
@@ -264,7 +293,7 @@ async function main() {
   const fd=fs.openSync(out,'wx',0o600);let cdp,scope,result;
   try {
     cdp=await new CDP(spec.endpoint).open();scope=new BrowserScope(cdp,spec);await scope.attach();
-    result=command==='plan'?await scope.plan():await scope.apply(plan,!!flags.execute);
+    result=command==='plan'?await scope.plan():flags.retry?await applyWithRefresh(scope,plan):await scope.apply(plan,!!flags.execute);
     fs.writeFileSync(fd,JSON.stringify(result,null,2)+'\n');
     console.log(JSON.stringify(command==='plan'?{status:'plan-ready'}:result));
     if(command==='apply'&&!['dry-run','cleared-selected-origins'].includes(result.status))process.exitCode=2;
