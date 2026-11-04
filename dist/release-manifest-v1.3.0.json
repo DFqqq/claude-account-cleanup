@@ -23,7 +23,7 @@
     "claude-account-cleanup/tests/test_completion.py": "1424a7855551838ad0a08acfa2ea962f7cf1ebae76c61cfa1626cdb0dcca962a",
     "claude-account-cleanup/tests/test_identifiers.py": "b91162699ba9fa8829b509f979533615b9c5de5da0618c2e59d53fc949fdf687",
     "claude-account-cleanup/tests/test_install.py": "6cfee807d3d3a483de377ecb1c550381596e8f73e34374daca8396343cbce3b4",
-    "claude-account-cleanup/tests/test_native_ui.py": "e3f775f4223600a26329243435f0eee82e4d66a123b38d3129a1503b2fb4eadc",
+    "claude-account-cleanup/tests/test_native_ui.py": "eb8ca4d0e23ebf65371338d0b96820482cb7f93f933e2000a4b10a4ffb0a08c2",
     "run_validation.py": "9ba02b69cab028bc66318de77a784544cd9b2244aa5892ad6ed5f436489afb79",
     "validation/browser_e2e.cjs": "89bc39e83adc36679d4bcfe4ccf1b7986ff39ed0593bad769ada62a16704835e",
     "validation/native_ui_windows_e2e.py": "b9cdf468230ce7f7be373de56dc6ead63ac7cf6ea2d231fccebec333be8475c1",
@@ -33,12 +33,12 @@
   },
   "artifacts": {
     "claude-account-cleanup-v1.3.0.zip": {
-      "sha256": "fe84d60d17a0d516d02b20457ad9a1dd4d5aa1c8b7c3d3709719d817ead6f5e7",
-      "bytes": 68388
+      "sha256": "22e87b6b2354297660eceb7b2fc36d7c4fc78db243226140948c7fcde8a32fd6",
+      "bytes": 68474
     },
     "Claude清理Skill-闲置Windows测试包-v1.3.0.zip": {
-      "sha256": "e16caa666e3688054f53a4f680536c816dd662c8a7dd1492011cc8ede6ee5f05",
-      "bytes": 90317
+      "sha256": "e14f1fa94dbcda2611f9bae854adb56a9d48aed2e25f6fc5d0efb1ad714cb451",
+      "bytes": 90403
     }
   }
 }

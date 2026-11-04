@@ -81,7 +81,9 @@ class NativeTests(unittest.TestCase):
     def test_selected_metadata_omits_password_flags_and_unrelated_attributes(self):
         import tempfile
         with tempfile.TemporaryDirectory() as base:
-            path=Path(base)/'fixture.keychain-db';path.write_bytes(b'FAKE')
+            # macOS /var is a symlink. Canonicalize ONLY this directory freshly
+            # created by the test; production path guards remain unchanged.
+            path=Path(base).resolve()/'fixture.keychain-db';path.write_bytes(b'FAKE')
             def runner(argv,**kw):
                 self.assertNotIn('-w',argv);self.assertNotIn('-g',argv)
                 return SimpleNamespace(returncode=0,stdout='"acct"<blob>="FAKE_ACCOUNT"\n"svce"<blob>="Claude Code-credentials"\n"other"<blob>="FAKE_NOT_OUTPUT"',stderr='')
