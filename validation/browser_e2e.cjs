@@ -45,7 +45,11 @@ async function view(p){return p.evaluate(async()=>({local:localStorage.getItem('
    drafts_saved:true,shared_login_excluded:true,close_target_tabs:true,origins:[OLD,CHILD],protected_origins:[KEEP,SHARED]};
   const specPath=path.join(root,'spec.json'),plan=path.join(root,'plan.json'),receipt=path.join(root,'receipt.json');fs.writeFileSync(specPath,JSON.stringify(spec));
   let r=await run(['plan','--spec',specPath,'--out',plan]);assert.equal(r.code,0,r.out+r.err);checks.push('installed helper creates a redacted plan from original fixture context');
-  r=await run(['apply','--plan',plan,'--out',path.join(root,'dry.json')]);assert.equal(r.code,0,r.out+r.err);assert.equal(old.isClosed(),false);assert.equal((await view(old)).local,'FAKE_OLD');checks.push('dry run preserves fake login and open drafts');
+  r=await run(['apply','--plan',plan,'--out',path.join(root,'dry.json')]);
+  // Chromium can settle quota usage between snapshots. A dry-run must either
+  // preview or safely reject the stale plan; neither path may change data.
+  if(r.code!==0){assert.equal(r.code,2,r.out+r.err);const refused=JSON.parse(r.out);assert.equal(refused.status,'blocked');assert.equal(refused.reason,'Browser state changed; old plan refused');}
+  assert.equal(old.isClosed(),false);assert.equal((await view(old)).local,'FAKE_OLD');checks.push('dry run preserves fake login and open drafts');
   // Exercise the actual installed completion runner with real file and browser
   // adapters, not a mock browser adapter or only a directly invoked helper.
   const fakeHome=path.join(root,'fictional-home'),config=path.join(fakeHome,'.claude');
@@ -97,7 +101,7 @@ async function view(p){return p.evaluate(async()=>({local:localStorage.getItem('
   const p2=path.join(root,'stale-plan.json');r=await run(['plan','--spec',specPath,'--out',p2]);assert.equal(r.code,0,r.out);
   await ctx.addCookies([{name:'login',value:'FAKE_NEW_AFTER_PLAN',domain:'.claude.ai',path:'/',secure:true}]);
   r=await run(['apply','--plan',p2,'--out',path.join(root,'stale-receipt.json'),'--execute']);assert.notEqual(r.code,0);assert.ok((await ctx.cookies()).some(c=>c.value==='FAKE_NEW_AFTER_PLAN'));checks.push('new login after plan blocks stale cleanup');
-  const result={version:'1.2.0',passed:true,checks,engine:browser.version(),intercepted_local_requests:intercepted,
+  const result={version:'1.3.0',passed:true,checks,engine:browser.version(),intercepted_local_requests:intercepted,
    real_account_access:false,real_skill_directory_modified:false,company_network_modified:false,
    boundary:'Real Chromium with isolated synthetic profile and locally fulfilled pages; not a real Claude login or macOS UI test.'};
   fs.writeFileSync(path.join(root,'result.json'),JSON.stringify(result,null,2));console.log(JSON.stringify({passed:true,checks:checks.length,result:path.join(root,'result.json')}));

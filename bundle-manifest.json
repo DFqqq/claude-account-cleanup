@@ -25,7 +25,7 @@
     "claude-account-cleanup/tests/test_install.py": "6cfee807d3d3a483de377ecb1c550381596e8f73e34374daca8396343cbce3b4",
     "claude-account-cleanup/tests/test_native_ui.py": "eb8ca4d0e23ebf65371338d0b96820482cb7f93f933e2000a4b10a4ffb0a08c2",
     "run_validation.py": "9ba02b69cab028bc66318de77a784544cd9b2244aa5892ad6ed5f436489afb79",
-    "validation/browser_e2e.cjs": "89bc39e83adc36679d4bcfe4ccf1b7986ff39ed0593bad769ada62a16704835e",
+    "validation/browser_e2e.cjs": "21c2c7a084aed1feef7e74cda71296a7dc291bbec15a16f4e0436d180a546eb4",
     "validation/native_ui_windows_e2e.py": "b9cdf468230ce7f7be373de56dc6ead63ac7cf6ea2d231fccebec333be8475c1",
     "validation/test_browser.mjs": "dff698d6483438193bceda70848619c08f66cda213a4df7a0a082c4e172f9f99",
     "validation/test_extended.py": "d18f3393df9e575775d69749b74bfb0b49b2ad79f507a7e7b934f000d6d920a6",
